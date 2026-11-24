@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17243a">
+<title>Snappy AI</title>
+<style>
+:root{--bg:#f2f5fa;--panel:#fff;--ink:#182338;--muted:#68758b;--line:#e2e8f0;--blue:#2878e8;--soft:#edf4ff;--shadow:0 8px 26px #1c31500d}
+[data-theme=dark]{--bg:#101827;--panel:#1b293d;--ink:#f1f5fb;--muted:#aab6c8;--line:#34445b;--blue:#69a7ff;--soft:#263b59;--shadow:0 8px 26px #0002}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.app{max-width:760px;margin:auto;padding:18px 15px 32px}.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}.logo{width:46px;height:46px;border-radius:15px;background:var(--blue);display:grid;place-items:center;color:white;font-size:24px}.brand{flex:1}.brand h1{font-size:21px;margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+button,input{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:white;font-weight:650}button.secondary{background:var(--soft);color:var(--ink)}button.ghost{background:transparent;color:var(--muted);padding:7px}button:disabled{opacity:.45;cursor:not-allowed}
+.nav{display:flex;gap:7px;overflow:auto;padding:7px;background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:20px;box-shadow:var(--shadow)}.nav button{white-space:nowrap;background:transparent;color:var(--muted);padding:9px 12px;font-size:13px}.nav button.active{background:var(--blue);color:white}
+h2{font-size:25px;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 17px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:27px;margin:5px 0}.stat .ico{font-size:21px}
+.row{display:flex;align-items:center;gap:9px}.row>*:first-child{flex:1}.field{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);outline:none}.field:focus{border-color:var(--blue)}.stack{display:grid;gap:9px}.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.item label{flex:1;overflow-wrap:anywhere}.item.done label{text-decoration:line-through;color:var(--muted)}.delete{background:transparent;color:var(--muted);padding:5px 8px}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;background:var(--blue)}
+.msg{padding:12px 14px;border-radius:14px;background:var(--soft);margin:8px 0;white-space:pre-wrap}.msg.you{background:var(--blue);color:white;margin-left:12%}.msg small{display:block;opacity:.7;font-size:11px;margin-bottom:4px}
+footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 0}
+@media(min-width:600px){.app{padding:28px 24px}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="top">
+ <div class="logo">✦</div><div class="brand"><h1>Snappy AI</h1><p>Your personal productivity dashboard</p></div>
+ <button class="secondary" id="themeBtn" aria-label="Switch theme">☾</button>
+</header>
+<nav class="nav" id="nav">
+ <button class="active" data-page="Home">⌂ Home</button><button data-page="Tasks">☷ Tasks</button><button data-page="Reminders">♧ Reminders</button><button data-page="Chat">✧ AI Chat</button><button data-page="Projects">▣ Projects</button>
+</nav>
+<main id="content"></main>
+<footer>SNAPPY AI · PERSONAL DASHBOARD · SAVED ON THIS DEVICE</footer>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+let tasks=load('snappy_tasks',[{id:1,name:"Review today's schoolwork",done:false},{id:2,name:"Check tomorrow's schedule",done:false}]);
+let reminders=load('snappy_reminders',[]);
+let projects=load('snappy_projects',["My first project"]);
+let page='Home',theme=load('snappy_theme','light'),messages=load('snappy_messages',[{from:'Snappy',text:"Hi! I'm Snappy. I can help organise your tasks and plan your day. What are we working on?"}]);
+function save(){localStorage.setItem('snappy_tasks',JSON.stringify(tasks));localStorage.setItem('snappy_reminders',JSON.stringify(reminders));localStorage.setItem('snappy_projects',JSON.stringify(projects));localStorage.setItem('snappy_messages',JSON.stringify(messages));localStorage.setItem('snappy_theme',JSON.stringify(theme))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function go(p){page=p;$('#nav').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
+$('#nav').addEventListener('click',e=>{let b=e.target.closest('button[data-page]');if(b)go(b.dataset.page)});
+$('#themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';applyTheme();save();render()};
+function applyTheme(){document.documentElement.dataset.theme=theme;$('#themeBtn').textContent=theme==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=theme==='dark'?'#17243a':'#f2f5fa'}
+function addTask(){let v=$('#taskInput').value.trim();if(!v)return;tasks.push({id:Date.now(),name:v,done:false});save();render()}
+function addReminder(){let n=$('#remName').value.trim(),w=$('#remWhen').value.trim();if(!n||!w)return;reminders.push({id:Date.now(),name:n,when:w});save();render()}
+function addProject(){let v=$('#projectInput').value.trim();if(!v)return;projects.push(v);save();render()}
+function render(){
+ const done=tasks.filter(t=>t.done).length;
+ if(page==='Home')$('#content').innerHTML=`<h2>Good day!</h2><p class="sub">Welcome back. What would you like to get done?</p><div class="grid"><div class="card stat"><span class="ico">☷</span><strong>${tasks.length}</strong><small>Total tasks</small></div><div class="card stat"><span class="ico">✓</span><strong>${done}</strong><small>Completed</small></div><div class="card stat"><span class="ico">♧</span><strong>${reminders.length}</strong><small>Reminders</small></div><div class="card stat"><span class="ico">▣</span><strong>${projects.length}</strong><small>Projects</small></div></div><div class="card"><b>Task progress</b><div class="progress"><span style="width:${tasks.length?done/tasks.length*100:0}%"></span></div><small style="color:var(--muted)">${done} of ${tasks.length} tasks completed</small></div><div class="card stack"><b>Quick actions</b><button onclick="go('Tasks')">＋ Add a task</button><button class="secondary" onclick="go('Reminders')">♧ Create a reminder</button><button class="secondary" onclick="go('Chat')">✧ Open Snappy chat</button></div>`;
+ if(page==='Tasks')$('#content').innerHTML=`<h2>My tasks</h2><p class="sub">${done} of ${tasks.length} completed</p><div class="card"><div class="row"><input id="taskInput" class="field" placeholder="What do you need to do?"><button onclick="addTask()">Add</button></div></div><div class="card">${tasks.length?tasks.map(t=>`<div class="item ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${t.id})"><label>${esc(t.name)}</label><button class="delete" onclick="deleteTask(${t.id})">✕</button></div>`).join(''):'<p class="sub">No tasks yet. Add your first task above.</p>'}</div>`;
+ if(page==='Reminders')$('#content').innerHTML=`<h2>Reminders</h2><p class="sub">Keep track of things you don't want to forget.</p><div class="card stack"><b>Create a reminder</b><input id="remName" class="field" placeholder="Reminder title"><input id="remWhen" class="field" placeholder="When? e.g. Tomorrow, 5 PM"><button onclick="addReminder()">Save reminder</button></div><div class="card"><b>Your reminders</b>${reminders.length?reminders.map(r=>`<div class="item"><span>♧</span><label><b>${esc(r.name)}</b><br><small style="color:var(--muted)">${esc(r.when)}</small></label><button class="delete" onclick="deleteReminder(${r.id})">✕</button></div>`).join(''):'<p class="sub" style="margin:12px 0 0">No reminders saved yet.</p>'}</div><p class="sub" style="font-size:12px">Note: these are saved reminders, not scheduled phone notifications. This standalone file cannot send background alerts.</p>`;
+ if(page==='Chat')$('#content').innerHTML=`<h2>AI Chat</h2><p class="sub">Your Snappy conversation space.</p><div class="card" id="chatBox">${messages.map(m=>`<div class="msg ${m.from==='You'?'you':''}"><small>${esc(m.from)}</small>${esc(m.text)}</div>`).join('')}<div class="stack"><input id="chatInput" class="field" placeholder="Type a message..."><button onclick="sendChat()">Send</button></div></div><p class="sub" style="font-size:12px">This offline prototype stores your messages locally. To get live AI answers, connect it to an AI service in a hosted version.</p>`;
+ if(page==='Projects')$('#content').innerHTML=`<h2>Projects</h2><p class="sub">Keep your ideas and work organised.</p><div class="card"><div class="row"><input id="projectInput" class="field" placeholder="New project name"><button onclick="addProject()">Add</button></div></div><div class="card"><b>Your workspace</b>${projects.map((p,i)=>`<div class="item"><span>▣</span><label>${esc(p)}</label><button class="delete" onclick="deleteProject(${i})">✕</button></div>`).join('')}</div>`;
+}
+function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save();render()}
+function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save();render()}
+function deleteReminder(id){reminders=reminders.filter(r=>r.id!==id);save();render()}
+function deleteProject(i){projects.splice(i,1);save();render()}
+function sendChat(){let el=$('#chatInput'),v=el.value.trim();if(!v)return;messages.push({from:'You',text:v},{from:'Snappy',text:"I've saved your message in this prototype. Live AI replies will be available when an AI service is connected."});save();render()}
+applyTheme();render();
+</script>
+</body></html>
