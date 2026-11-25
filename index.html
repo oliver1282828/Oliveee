@@ -60,7 +60,71 @@ function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save
 function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save();render()}
 function deleteReminder(id){reminders=reminders.filter(r=>r.id!==id);save();render()}
 function deleteProject(i){projects.splice(i,1);save();render()}
-function sendChat(){let el=$('#chatInput'),v=el.value.trim();if(!v)return;messages.push({from:'You',text:v},{from:'Snappy',text:"I've saved your message in this prototype. Live AI replies will be available when an AI service is connected."});save();render()}
-applyTheme();render();
+
+function getSnappyReply(text) {
+  const msg = text.toLowerCase();
+
+  if (/^(hi|hello|hey|hii|yo)\b/.test(msg)) {
+    return "Hey there! I'm Snappy, your personal assistant. What can I help you with today?";
+  }
+
+  if (msg.includes("how are you")) {
+    return "I'm doing great! Ready to help you organise your day. What are we working on?";
+  }
+
+  if (msg.includes("study") || msg.includes("homework")) {
+    return "Let's tackle your studies together! Tell me the subject and topic, and I'll help explain it step by step.";
+  }
+
+  if (msg.includes("plan") || msg.includes("schedule")) {
+    return "Let's organise your day! Start by listing what you need to get done. We can arrange the tasks into a sensible order.";
+  }
+
+  if (msg.includes("task") || msg.includes("todo")) {
+    return "I can help you organise your tasks! You can add them in the Tasks section of your dashboard.";
+  }
+
+  if (msg.includes("reminder")) {
+    return "You can add reminders in the Reminders section. Just remember that this version doesn't send background phone notifications.";
+  }
+
+  if (msg.includes("project")) {
+    return "Working on a project? Tell me what you're building, and I can help you break it into smaller steps.";
+  }
+
+  if (msg.includes("car") || msg.includes("vehicle")) {
+    return "Cars are fascinating! I can chat about car brands, engines, manufacturers and automotive technology.";
+  }
+
+  if (msg.includes("weather") || msg.includes("news")) {
+    return "I can't access live weather or news in this offline version, but I can still help with general questions.";
+  }
+
+  if (msg.includes("thank")) {
+    return "You're welcome! That's what I'm here for. Anything else you'd like help with?";
+  }
+
+  return "Interesting! Tell me a little more so I can understand what you need. I'll do my best to help.";
+}
+
+function sendChat() {
+  let el = $('#chatInput');
+  let v = el.value.trim();
+
+  if (!v) return;
+
+  const reply = getSnappyReply(v);
+
+  messages.push(
+    { from: 'You', text: v },
+    { from: 'Snappy', text: reply }
+  );
+
+  el.value = '';
+  save();
+  render();
+}
+
+ applyTheme();render();
 </script>
 </body></html>
